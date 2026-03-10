@@ -1,0 +1,56 @@
+# ==========================================
+# .gitignore MAESTRO (Monorepo Vue + NestJS)
+# ==========================================
+
+# 1. Credenciales y Entornos  
+.env
+.env.*.local 
+#.env.*.local es un .env local de vite de "pruebas" 
+*.pem
+# Por si acaso a futuro esto se va a AWS
+# Si algún día exportamos la BD manualmente, que no se suba el archivo de texto:
+*.sql
+
+# 2. Volúmenes de Docker 
+pgdata/
+
+# 3. Dependencias de Node 
+node_modules/
+# Los 'package-lock.json' no se ignoran. Deben subirse para 
+# garantizar que todos usan las mismas versiones exactas.
+
+# 4. Artefactos de Compilación (Front y Back) 
+dist/
+build/
+.output/
+.nest/
+coverage/
+
+# 5. Logs y Debugging
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# 6. Basura del SO
+
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 7. Basura de IDEs
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.vscode/*
+
+# Excepciones Compartidas ---
+# Queremos ignorar las configuraciones locales de VS Code, 
+# PERO que se compartan las extensiones recomendadas y reglas de formato:
+!.vscode/extensions.json
+!.vscode/settings.json

@@ -1,0 +1,81 @@
+#Compose del entorno de desarrollo
+services:
+  nginx_dev:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      # Inyectamos nuestra configuración para repartir el tráfico entre Vue y Nest
+    depends_on:
+      - frontend_dev
+      - backend_dev
+    networks:
+      - web-net
+
+  frontend_dev:
+    build:
+      context: ./front-src                       # Apunta al código Vue
+      dockerfile: ../docker/frontend/Dockerfile  # Ruta Dockerfile
+      target: development                        # Para en desarrollo
+    volumes:
+      - ./front-src:/app                         # Vinculamos el código vivo
+      - /app/node_modules                        # Con esto evitamos que se machaque la carpeta node_modules
+    networks:
+      - web-net
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+
+  backend_dev:
+    build:
+      context: ./back-src                        # Apunta al código NestJS
+      dockerfile: ../docker/backend/Dockerfile   # Ruta Dockerfile
+      target: development                        # Para en desarrollo
+    volumes:
+      - ./back-src:/app
+      - /app/node_modules                        # Igual que con el front
+    env_file:
+      - .env                                     # Inyectamos variables
+    command: sh -c "sleep 5 && npm run start:dev"
+      
+    networks:
+      - web-net
+      - global-db-net
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+
+  adminer_dev:
+    image: adminer:5.4.2
+    ports:
+      - "8080:8080"
+    # depends_on:
+    networks:
+      - global-db-net
+
+  dozzle_dev:
+    image: amir20/dozzle:v10.0.7
+    container_name: dozzle-logs
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro # Permiso de solo lectura
+    ports:
+      - "8888:8080"
+    networks:
+      - web-net
+    # Opcional: interfaz oscura y logs agrupados
+    environment:
+      DOZZLE_LEVEL: info
+      DOZZLE_TAILSIZE: 300
+      DOZZLE_FILTER: "status=running"
+
+networks:
+  web-net: # nginx, front y back
+  global-db-net: # Solo back, postgres y adminer
+    external: true
+
+
+# Destacar que el único servicio que tiene la etiqueta ports abierta hacia el exterior 
+# es Nginx (el 80) y Adminer (el 8080). 
+# Vue y NestJS tienen sus puertos (5173 y 3000) cerrados al público, 
+# obligando a que todo el tráfico pase por las reglas de seguridad de Nginx.

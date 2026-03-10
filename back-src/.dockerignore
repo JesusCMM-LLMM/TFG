@@ -1,0 +1,29 @@
+# ==========================================
+# .dockerignore (Optimización de Build)
+# ==========================================
+
+# --- 1. Dependencias Locales  ---
+node_modules/
+npm-debug.log
+
+# --- 2. Archivos compilados locales ---
+dist/
+build/
+.output/
+.nest/
+
+# --- 3. Control de Versiones ---
+.git/
+.gitignore
+
+# --- 4. Variables de Entorno y Secretos ---
+.env
+.env.*
+*.pem
+
+# --- 5. Archivos de IDE y SO ---
+.vscode/
+README.md
+
+# --- 6. Tests
+coverage/

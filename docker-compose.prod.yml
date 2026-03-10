@@ -1,0 +1,55 @@
+# Composer de producción, volúmenes fuera, adminer fuera
+# docker-compose -f docker-compose.prod.yml up -d --build
+name: demo_produccion
+
+services:
+
+  nginx_prod:
+    image: nginx:alpine-slim
+    ports:
+      - "80:80"
+    volumes:
+      # Inyectamos la configuración específica de producción
+      - ./docker/nginx/prod.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - frontend_prod
+      - backend_prod
+    networks:
+      - web-net
+    restart: always
+
+  frontend_prod:
+  # Vue estático servido por Nginx interno
+    build:
+      context: ./front-src
+      dockerfile: ../docker/frontend/Dockerfile
+      target: production
+    # Sin volúmenes de código: la imagen ya contiene la carpeta /dist
+    networks:
+      - web-net
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+
+  backend_prod:
+  # NestJS compilado
+    build:
+      context: ./back-src
+      dockerfile: ../docker/backend/Dockerfile
+      target: production
+    env_file:
+      - .env
+    networks:
+      - web-net
+      - global-db-net
+    restart: always
+
+networks:
+  web-net:
+  global-db-net:
+    external: true
+    
