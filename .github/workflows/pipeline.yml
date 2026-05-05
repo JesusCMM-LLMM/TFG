@@ -29,14 +29,14 @@ jobs:
       - name: Validar Frontend (Oxlint & Tests)
         run: |
           cd front-src
-          npm ci
+          npm install
           npm run lint
           npm run test
 
       - name: Validar Backend (Lint & Tests)
         run: |
           cd back-src
-          npm ci
+          npm install
           npm run lint
           npm run test
 
