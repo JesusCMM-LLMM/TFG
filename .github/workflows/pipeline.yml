@@ -1,0 +1,110 @@
+name: CI/CD Pipeline - Monorepo
+
+# 1. DISPARADORES 
+on:
+  push:
+    branches: [ "main", "develop", "feature/*" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: # Permite ejecución manual
+
+jobs:
+  # ==========================================
+  # FASE 1: INTEGRACIÓN Y CONTROL DE CALIDAD
+  # ==========================================
+  quality-checks:
+    name: Lint & Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js (con caché)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: '**/package-lock.json'
+
+      - name: Validar Frontend (Oxlint & Tests)
+        run: |
+          cd front-src
+          npm ci
+          npm run lint
+          npm run test
+
+      - name: Validar Backend (Lint & Tests)
+        run: |
+          cd back-src
+          npm ci
+          npm run lint
+          npm run test
+
+  # ==========================================
+  # FASE 2: CONSTRUCCIÓN, SEGURIDAD Y PUBLICACIÓN
+  # ==========================================
+  build-scan-push:
+    name: Build & Push
+    needs: quality-checks # Solo se ejecuta si la Fase 1 pasa
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request' # Solo en merges/pushes a main
+    runs-on: ubuntu-latest
+    
+    # Matriz para construir Front y Back en paralelo sin duplicar código
+    strategy:
+      matrix:
+        include:
+          - service: frontend
+            context: ./front-src
+            dockerfile: ./docker/frontend/Dockerfile
+            image_name: jcmm13/tfg-frontend
+          - service: backend
+            context: ./back-src
+            dockerfile: ./docker/backend/Dockerfile
+            image_name: jcmm13/tfg-backend
+
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Configurar Docker Buildx (Para Caché de capas)
+        uses: docker/setup-buildx-action@v3
+
+      - name: Autenticación segura en Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Etiquetado Dinámico (SHA y latest)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ matrix.image_name }}
+          tags: |
+            type=sha,format=short
+            type=raw,value=latest
+
+      - name: Construir Imagen Local (Target Production)
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          target: production
+          load: true # Mantiene la imagen en el runner para escanearla antes de subirla
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Escaneo DevSecOps (Trivy)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: '${{ matrix.image_name }}:latest'
+          format: 'table'
+          exit-code: '1' # Falla el pipeline si encuentra vulnerabilidades críticas
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Push final a Docker Hub
+        if: success() # Solo se ejecuta si Trivy no ha detectado fallos críticos
+        run: docker push --all-tags ${{ matrix.image_name }}
