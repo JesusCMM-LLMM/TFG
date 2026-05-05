@@ -29,6 +29,8 @@ jobs:
       - name: Validar Frontend (Oxlint & Tests)
         run: |
           cd front-src
+          rm -f package-lock.json
+          rm -rf node_modules
           npm install
           npm run lint
           npm run test
