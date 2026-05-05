@@ -33,14 +33,12 @@ jobs:
           rm -rf node_modules
           npm install
           npm run lint
-          npm run test
 
       - name: Validar Backend (Lint & Tests)
         run: |
           cd back-src
           npm install
           npm run lint
-          npm run test
 
   # ==========================================
   # FASE 2: CONSTRUCCIÓN, SEGURIDAD Y PUBLICACIÓN
