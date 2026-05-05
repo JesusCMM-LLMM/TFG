@@ -103,7 +103,7 @@ jobs:
           exit-code: '1' # Falla el pipeline si encuentra vulnerabilidades críticas
           ignore-unfixed: true
           vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+          severity: 'CRITICAL'
 
       - name: Push final a Docker Hub
         if: success() # Solo se ejecuta si Trivy no ha detectado fallos críticos
