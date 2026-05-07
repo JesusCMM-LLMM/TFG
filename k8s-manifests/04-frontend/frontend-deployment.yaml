@@ -34,8 +34,14 @@ spec:
                 topologyKey: kubernetes.io/hostname  
       containers:
         - name: proyecto-frontend
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+            privileged: true
+            allowPrivilegeEscalation: true
           image: jcmm13/tfg-frontend:latest
           imagePullPolicy: Always
+
           # Eliminamos runAsNonRoot para permitir el uso del puerto 80
           securityContext:
             allowPrivilegeEscalation: true
