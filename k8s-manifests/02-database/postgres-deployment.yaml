@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proyecto-postgres
+  namespace: proyecto-tfg-2026
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      # Seguridad a nivel de POD: Esto le dice a AWS que el dueño del volumen
+      # debe ser el grupo 70 (postgres), evitando errores de permisos.
+      securityContext:
+        fsGroup: 70
+        fsGroupChangePolicy: "OnRootMismatch"
+        seccompProfile:
+          type: RuntimeDefault
+
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports:
+            - containerPort: 5432
+          
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata # <--- Nueva subcarpeta limpia
+            # 1. El nombre de la base de datos (Viene del ConfigMap)
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-configmap
+                  key: DB_NAME
+            
+            # 2. El usuario administrador (Viene del Secret)
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: DB_USER
+            
+            # 3. La contraseña (Viene del Secret)
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: DB_PASSWORD
+          
+          # Chequeos de Salud (Probes)
+          readinessProbe:
+            exec:
+              command: ["sh", "-c", "pg_isready -U $POSTGRES_USER"]
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            exec:
+              command: ["sh", "-c", "pg_isready -U $POSTGRES_USER"]
+            initialDelaySeconds: 20
+            periodSeconds: 20
+            
+          # Límites de Recursos para EKS
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+              subPath: pgdata # <--- Esto separa tu BD de los archivos de AWS
+              # Hemos eliminado subPath para evitar conflictos iniciales en el disco
+      
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-pvc

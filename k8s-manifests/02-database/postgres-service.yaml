@@ -1,0 +1,14 @@
+# La IP fija interna para que el backend lo encuentre.
+apiVersion: v1
+kind: Service
+metadata:
+  name: proyecto-postgres
+  namespace: proyecto-tfg-2026
+spec:
+  type: ClusterIP # Solo accesible desde dentro del clúster (El backend)
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432

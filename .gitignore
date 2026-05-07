@@ -1,7 +1,7 @@
 # ==========================================
 # .gitignore MAESTRO (Monorepo Vue + NestJS)
 # ==========================================
-
+.terraform
 # 1. Credenciales y Entornos  
 .env
 .env.*.local 

@@ -1,0 +1,12 @@
+# Variables de entorno normales (NODE_ENV, puertos, etc.)
+apiVersion: v1
+kind: ConfigMap # Almacena variables de entorno no sensibles
+metadata:
+  name: backend-configmap 
+  namespace: proyecto-tfg-2026
+data:
+  NODE_ENV: "development_rookies2026" # Entorno de ejecución del backend 
+  PORT: "3000" # Puerto en el que escucha el backend
+  DB_HOST: proyecto-postgres # Esto sería el nombre del service 02
+  DB_PORT: "5432"
+  DB_NAME: "nest_db"

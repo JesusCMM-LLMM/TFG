@@ -1,0 +1,108 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proyecto-backend
+  namespace: proyecto-tfg-2026
+  labels:
+    app: proyecto-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: proyecto-backend
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: proyecto-backend
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
+        fsGroup: 10001 # Asegura que el volumen temporal sea escribible por el usuario
+        seccompProfile:          
+          type: RuntimeDefault
+
+      affinity:                  
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values:
+                        - proyecto-backend 
+                topologyKey: kubernetes.io/hostname
+
+      containers:
+        - name: proyecto-backend
+          image: jcmm13/tfg-backend:latest
+          imagePullPolicy: Always
+          command: ["node", "dist/main.js"] # <--- Fuerza el arranque de producción
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            # runAsUser: 10001
+            readOnlyRootFilesystem: false   
+            capabilities:
+              drop:
+                - ALL 
+            seccompProfile:
+              type: RuntimeDefault
+          
+          # Mapeo exacto según tu imagen de Sequelize
+          env:
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-configmap
+                  key: DB_NAME
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: DB_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: DB_PASSWORD
+            - name: DB_HOST
+              value: "proyecto-postgres"
+            - name: DB_PORT
+              value: "5432"
+
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 20 # Aumentamos un poco para dar tiempo a Sequelize
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+
+          volumeMounts:
+            - name: storage-uploads
+              mountPath: /app/uploads # Soluciona el error de EACCES mkdir
+
+      volumes:
+        - name: storage-uploads
+          emptyDir: {} # Carpeta temporal con permisos para el usuario 10001

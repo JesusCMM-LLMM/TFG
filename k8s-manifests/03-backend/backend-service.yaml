@@ -1,0 +1,15 @@
+# Expone el puerto 3000 de la API dentro del clúster.
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: proyecto-backend
+  namespace: proyecto-tfg-2026
+spec:
+  selector:
+    app: proyecto-backend
+  ports:
+    - protocol: TCP
+      port: 3000
+      targetPort: 3000
+  type: ClusterIP

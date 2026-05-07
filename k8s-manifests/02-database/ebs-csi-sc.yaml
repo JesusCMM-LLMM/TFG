@@ -1,0 +1,10 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: ebs-sc # Nombre que usaremos en el PVC
+provisioner: ebs.csi.aws.com # 
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  type: gp3 # gp3 es más rápido y un 20% más barato que gp2
+  encrypted: "true"
+# (Hemos eliminado el bloque allowedTopologies)

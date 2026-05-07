@@ -1,0 +1,13 @@
+# El disco duro virtual para que no se borren los datos.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: proyecto-tfg-2026
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ebs-sc # <--- Asegúrate de que este nombre coincide con tu cluster
+  resources:
+    requests:
+      storage: 2Gi

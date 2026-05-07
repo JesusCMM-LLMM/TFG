@@ -48,10 +48,10 @@ FROM nginx:alpine-slim AS production
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Con esta línea, obligamos a Nginx a redirigir todo al index.html para que Vue gestione la ruta.
-RUN echo 'server { listen 80; location / { root /usr/share/nginx/html; try_files $uri $uri/ /index.html; } }' > /etc/nginx/conf.d/default.conf
+RUN echo 'server { listen 8080; location / { root /usr/share/nginx/html; try_files $uri $uri/ /index.html; } }' > /etc/nginx/conf.d/default.conf
 # Esto de arriba inyecta una configuración de Nginx al vuelo, evita errores con el hot reload
 # Exponemos el puerto estándar web
-EXPOSE 80
+EXPOSE 8080
 
 # Arrancamos Nginx en primer plano para que el contenedor no se apague
 CMD ["nginx", "-g", "daemon off;"]

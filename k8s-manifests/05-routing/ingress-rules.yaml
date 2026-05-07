@@ -1,0 +1,33 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: proyecto-ingress
+  namespace: proyecto-tfg-2026
+  annotations:
+    # Habilitamos las expresiones regulares (regex) en las rutas
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    # Esto equivale al 'rewrite ^/api/(.*) /$1 break;' del nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx # <--- Esto se mueve aquí abajo
+  rules:
+    - http:
+        paths:
+          # Backend
+          - path: /api(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: proyecto-backend
+                port:
+                  number: 3000     
+                       
+          # Frontend
+          - path: /()(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: proyecto-frontend
+                port:
+                  number: 8080
+          

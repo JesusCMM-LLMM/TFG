@@ -1,0 +1,9 @@
+# Aisla el proyecto del resto del cluster.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: proyecto-tfg-2026  
+  labels:
+    proyecto: proyecto-tfg-2026 
+
+
