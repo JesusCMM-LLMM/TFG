@@ -29,5 +29,5 @@ spec:
               service:
                 name: proyecto-frontend
                 port:
-                  number: 8080
+                  number: 80
           
