@@ -240,6 +240,9 @@ kubectl get ingress -n proyecto-tfg-2026
 terraform destroy
 ```
 
+**A futuro:**
+Automatizar el despliegue de los manifiestos con Terraform. 
+
 ---
 
 ## Gestión con Portainer
