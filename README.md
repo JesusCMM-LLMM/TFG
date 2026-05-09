@@ -79,8 +79,8 @@ Usuario Final (navegador · DNS ELB · puerto 80)
 
 | Capa | Tecnología |
 |---|---|
-| **Frontend** | Vue 3 · Vite · Nginx · Oxlint | Solo es un placeholder
-| **Backend** | NestJS · TypeScript · PostgreSQL | Solo es un placeholder
+| **Frontend** | Vue 3 · Vite · Nginx · Oxlint (Solo es un placeholder) | 
+| **Backend** | NestJS · TypeScript · PostgreSQL (Solo es un placeholder) | 
 | **Contenedores** | Docker · Docker Compose · Multi-stage Builds |
 | **CI/CD** | GitHub Actions · Trivy (DevSecOps) · Docker Hub |
 | **IaC** | Terraform · AWS Provider `~> 5.0` |
