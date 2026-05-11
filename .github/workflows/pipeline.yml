@@ -39,6 +39,7 @@ jobs:
   # ==========================================
   quality-checks:
     name: Lint & Test
+    needs: detect-changes
     runs-on: ubuntu-latest
     steps:
       - name: Checkout del código
