@@ -17,6 +17,7 @@ jobs:
       frontend: ${{ steps.filter.outputs.frontend }}
       backend: ${{ steps.filter.outputs.backend }}
       infra: ${{ steps.filter.outputs.infra }}
+      run_build: ${{ steps.filter.outputs.frontend == 'true' || steps.filter.outputs.backend == 'true' }}
     steps:
       - name: Checkout del código
         uses: actions/checkout@v4
@@ -40,6 +41,7 @@ jobs:
   quality-checks:
     name: Lint & Test
     needs: detect-changes
+    if: needs.detect-changes.outputs.run_build == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout del código
