@@ -9,6 +9,31 @@ on:
   workflow_dispatch: # Permite ejecución manual
 
 jobs:
+   # JOB 0.5: Detectar cambios
+  detect-changes:
+    name: Detectar Cambios
+    runs-on: ubuntu-latest # runner-local para un runner autohosted
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+      infra: ${{ steps.filter.outputs.infra }}
+    steps:
+      - name: Checkout del código
+        uses: actions/checkout@v4
+
+      - name: Filtrar rutas modificadas
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'front-src/**'
+            backend:
+              - 'back-src/**'
+            infra:
+              - 'docker-compose*.yml'
+              - '.github/workflows/**'
+              - 'docker/**'
   # ==========================================
   # FASE 1: INTEGRACIÓN Y CONTROL DE CALIDAD
   # ==========================================
