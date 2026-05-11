@@ -34,13 +34,12 @@ module "eks" {
   # Permisos de administrador al usuario que está creando el clúster 
   enable_cluster_creator_admin_permissions = true
 
-  # --- NUEVO: Instalamos el driver (traductor) de discos EBS ---
+  # Instalamos el driver (traductor) de discos EBS ---
   cluster_addons = {
     aws-ebs-csi-driver = {
       most_recent = true
     }
   }
-  # -------------------------------------------------------------
 
   # Definición de las máquinas virtuales (Worker Nodes)
   eks_managed_node_groups = {
