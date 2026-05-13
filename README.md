@@ -234,6 +234,13 @@ kubectl apply -f k8s-manifests/06-hpa/
 ```bash
 kubectl get ingress -n proyecto-tfg-2026
 ```
+**Previo a esto, tenemos que instalar ingress en su namespace correspondiente:**
+
+```bash
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx  --namespace ingress-nginx --create-namespace --set controller.service.annotations."service\.beta\.kubernetes\.io/aws-load-balancer-type"="nlb"
+```
 
 **Para destruir la infraestructura y evitar costes:**
 ```bash
